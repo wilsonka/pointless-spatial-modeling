@@ -47,14 +47,19 @@ kenya.data$ybar <- rnorm(400, kenya.data$mu, sd=sqrt(sigma2/kenya.data$N))
 
 # Census
 # data simulated on 1kmx1km grid
-coordinates(pop.dat.kenya) <- ~ long + lat
-pop.dat.kenya@proj4string <- adm0@proj4string
-pop.pt.insideX <- pop.dat.kenya[adm0, ]
+pop.data.kenya.points <- data.frame(rasterToPoints(pop.dat.kenya, spatial = F))
+names(pop.data.kenya.points) <- c("long", "lat", "pop")
+coordinates(pop.data.kenya.points) <- ~ long + lat
+pop.data.kenya.points@proj4string <- adm0@proj4string
+pop.pt.insideX <- pop.data.kenya.points[adm0, ]
 pop.pt.inside <- as.data.frame(pop.pt.insideX)
+coordinates(pop.pt.inside) <- ~ long + lat
+pop.pt.inside@proj4string <- adm0@proj4string
+
 
 # for truth defined at mesh points
 proj.to.pop <- inla.mesh.projector(mesh.true, 
-                                   loc=as.matrix(pop.pt.inside[, 1:2]))
+                                   loc=as.matrix(pop.pt.inside@coords))
 
 field.at.pop <- inla.mesh.project(proj.to.pop, 
                                   field=field.true)
@@ -62,7 +67,9 @@ pop.inside <- pop.pt.inside
 pop.inside$mu <- alpha + field.at.pop
 
 ### 47 Areas
-poplocs47 <- DeterminePointsInPolys(pop.inside[,1:2], kenya.df47)
+#poplocs47 <- DeterminePointsInPolys(pop.inside[,1:2], kenya.df47)
+poplocs47 <- over(pop.pt.inside, adm1)[,1]
+#is.na(poplocs47) <- 0
 
 pop.inside$locs47 <- poplocs47
 popi <- tapply(pop.inside$pop, pop.inside$locs47, sum)
@@ -74,7 +81,8 @@ census.df47 <- data.frame(id=1:47, ybar=rnorm(47, mui, sd=sqrt(sigma2/households
                           N=householdsizei)
 
 ### 8 Areas
-poplocs8 <- mapping47to8[poplocs47 + 1]
+#poplocs8 <- mapping47to8[poplocs47 + 1]
+poplocs8 <- mapping47to8[poplocs47]
 pop.inside$locs8 <- poplocs8
 popi8 <- tapply(pop.inside$pop, pop.inside$locs8, sum)
 householdsizei8 <- popi8/3.9
@@ -92,11 +100,9 @@ f.spde <- y ~ -1 + alpha + f(i,model=spde)
 # Option 1: all coordinates
 A <- inla.spde.make.A(mesh.true, loc=as.matrix(kenya.data[, c("LONGNUM", 
                                                               "LATNUM")]))
-
 source("Code/simulation_models/run_simulation_points.R")
 
 # Option 2: 47 areas
-
 source("Code/simulation_models/run_simulation_47areas.R")
 
 # Option 3: Survey + 47
@@ -104,14 +110,11 @@ D.both <- rbind(A, D)
 source("Code/simulation_models/run_simulation_both.R")
 
 # Option 4: 8 Provinces
-
 source("Code/simulation_models/run_simulation_8areas.R")
 
 # Option 5: Survey + 8
-
 D.both8 <- rbind(A, D8)
 source("Code/simulation_models/run_simulation_8areas_both.R")
-
 
 
 
@@ -136,8 +139,8 @@ sum(census.df8$N)
 # Field Info
 1 / (4 * pi * exp(theta1)^2 * exp(theta2)^2) # marginal variance
 sqrt(8) / exp(theta2)  # practical range
-mean(field.true)  # -0.0783
-var(field.true)  # 0.761
+mean(field.true)  # 0.182
+var(field.true)  # 0.672
 
 
 ######################
@@ -146,12 +149,13 @@ var(field.true)  # 0.761
 
 # Table 01
 # points
-ObtainResults(res.spde.points, field.true, mesh.df$loc != 0)
+#ObtainResults(res.spde.points, field.true, mesh.df$loc != 0)
+ObtainResults(res.spde.points, field.true, !is.na(mesh.df$loc))
 # 47 areas
-ObtainResults(res.spde.area, field.true, mesh.df$loc != 0)
+ObtainResults(res.spde.area, field.true, !is.na(mesh.df$loc))
 # Both
-ObtainResults(res.spde.both, field.true, mesh.df$loc != 0)
+ObtainResults(res.spde.both, field.true, !is.na(mesh.df$loc))
 # 8 areas
-ObtainResults(res.spde.area8, field.true, mesh.df$loc != 0)
+ObtainResults(res.spde.area8, field.true, !is.na(mesh.df$loc))
 # Both
-ObtainResults(res.spde.both8, field.true, mesh.df$loc != 0)
+ObtainResults(res.spde.both8, field.true, !is.na(mesh.df$loc))

@@ -5,7 +5,7 @@
 # Load adm0, adm0.5, adm1, 
 #   kenya.data (location and sample size of each cluster), and 
 #   pop.dat.kenya (population data for Kenya)
-load("Data/Kenya/kenya_data.RData")
+load("Data/Kenya/kenya_dataNEW.RData")
 
 kenya.df1 <- fortify(adm0)
 kenya.df1$id <- as.numeric(kenya.df1$id)
@@ -34,10 +34,11 @@ boundary.kenya <- inla.nonconvex.hull(points.kenya@coords,
                                       resolution=c(120,120))
 
 # Determine population near these mesh points
-pop.at.mesh <- FindPopAtMesh(data.frame(points.kenya@coords), pop.dat.kenya)
-
-# If not ordered, the mesh is slightly different which affects simulation
-pop.at.mesh <- pop.at.mesh[order(pop.at.mesh$mx, pop.at.mesh$my), ]
+pop.at.meshX <- extract(pop.dat.kenya, points.kenya@coords)
+pop.at.meshX[is.na(pop.at.meshX)] <- 0
+pop.at.mesh <- data.frame(points.kenya@coords)
+pop.at.mesh$pop <- pop.at.meshX
+names(pop.at.mesh)[1:2] <- c("mlong", "mlat")
 
 # Make the mesh
 mesh.true <- inla.mesh.2d(pop.at.mesh[, 1:2], offset=c(1, 2), 
@@ -45,8 +46,11 @@ mesh.true <- inla.mesh.2d(pop.at.mesh[, 1:2], offset=c(1, 2),
 
 ### adm1
 # Determine which polys the mesh points live in
-meshlocs <- DeterminePointsInPolys(mesh.true$loc, kenya.df47)
-
+meshgrid <- data.frame(Longitude = mesh.true$loc[,1],
+                       Latitude = mesh.true$loc[,2])
+coordinates(meshgrid) = ~ Longitude + Latitude
+proj4string(meshgrid) = proj4string(adm1)
+meshlocs = over(meshgrid, adm1)[,1]
 tapply(rep(1, length(meshlocs)), meshlocs, sum)
 
 mesh.df <- data.frame(mlong=mesh.true$loc[, 1],
@@ -54,27 +58,30 @@ mesh.df <- data.frame(mlong=mesh.true$loc[, 1],
                       loc=meshlocs)
 mesh.df$id <- 1:nrow(mesh.df)
 
-names(pop.at.mesh)[1:2] <- c("mlong","mlat")
 
 ### adm0.5
 # Determine which polys the mesh points live in
 
 # There is slight misalignment of the boundaries, which should completely 
 #  overlap. Thus, we manually enter the provinces based on which of the 47
-#  disctricts the mesh point is in.
-meshlocs8 <- DeterminePointsInPolys(mesh.true$loc, kenya.df8)
+#  districts the mesh point is in.
+meshlocs8 <- over(meshgrid, adm0.5)[,1]
 mesh.df$loc8X <- meshlocs8
 
 mapping47to8 <- as.vector(apply(table(mesh.df[, c("loc", "loc8X")]),
-                                1, which.max) - 1)
-mesh.df$loc8 <- mapping47to8[mesh.df$loc + 1]
+                                1, which.max))
+mesh.df$loc8 <- mapping47to8[mesh.df$loc]
 
 ### Population at mesh including polygon location
 pop.at.mesh <- plyr::join(mesh.df, pop.at.mesh, type="right")
 
 ### Create D matrix
 # adm1
-D.tmp <- MakeDMatrix(pop.at.mesh, "loc", mesh.true$n)
+D <- inla.spde.make.A(mesh=mesh.true, loc=as.matrix(pop.at.mesh[,1:2]), 
+                        block=pop.at.mesh$loc, weights=pop.at.mesh$pop)
+D.tmp <- list()
+D.tmp$D <- D/rowSums(D)
+D.tmp$mesh.weights <- colSums(D)
 mesh.df$weight.unscaled <- D.tmp$mesh.weights
 D <- D.tmp$D
 
@@ -82,9 +89,14 @@ mesh.df$weight.scaled <- colSums(D)
 nmesh.area <- 1 / tapply(rep(1, nrow(mesh.df)), mesh.df$loc, sum)
 mesh.df$weight.comp <- nmesh.area[mesh.df$loc + 1] # comparison weight
 
-
 # adm0.5
-D.tmp8 <- MakeDMatrix(pop.at.mesh, "loc8", mesh.true$n)
+
+D8 <- inla.spde.make.A(mesh=mesh.true, loc=as.matrix(pop.at.mesh[,1:2]), 
+                      block=pop.at.mesh$loc8, weights=pop.at.mesh$pop)
+D.tmp8 <- list()
+D.tmp8$D <- D8/rowSums(D8)
+D.tmp8$mesh.weights <- colSums(D8)
+
 mesh.df$weight.unscaled8 <- D.tmp8$mesh.weights
 D8 <- D.tmp8$D
 mesh.df$weight.scaled8 <- colSums(D8)
