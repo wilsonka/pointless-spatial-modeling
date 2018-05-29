@@ -72,30 +72,31 @@ HMC <- function(stepsize, L, current_q, Y, E, A, Q) {
 
 steptheta <- function(q, theta, spde, c.Sig) {
   accept <- 0
+  
   m <- spde$n.spde
   thetamu <- spde$param.inla$theta.mu
   S <- q[2:length(q)]
   theta1 <- theta[1]
   theta2 <- theta[2]
-
+  
   thetastar <- as.vector(rmvnorm(1, mean=theta, sigma=c.Sig))
   theta1star <- thetastar[1]
   theta2star <- thetastar[2]
-
   Q <- inla.spde.precision(spde, theta=theta)
   Qstar <- inla.spde.precision(spde, theta=thetastar)
-
+  
   posteriorstar <- inla.qsample(Q=Qstar, mu=rep(0, m),
                                 sample=S, logdens=T)$logdens -
     1/20 * (theta1star - thetamu[1])^2 - 1/20 * (theta2star - thetamu[2])^2
   posterior <- inla.qsample(Q=Q, mu=rep(0, m),
                             sample=S, logdens=T)$logdens -
     1/20 * (theta1 - thetamu[1])^2 - 1/20 * (theta2 - thetamu[2])^2
-
+  
   if(log(runif(1)) < (posteriorstar - posterior) ) {
     accept <- 1
     theta <- thetastar
   }
+  
   return(list(accept=accept, theta=theta))
 }
 
@@ -116,6 +117,9 @@ runManyFB <- function(M, stepsize, L, initial.q, initial.theta , Y, E, A, spde,
     if(!is.null(maxL)){
       L <- sample(1:maxL,1)
     }
+    if(i %% 100 == 0) {
+      print(i)
+    }
 
     outstep1 <- steptheta(q.prev, theta.prev, spde, c.Sig)
     theta.prev <- outstep1$theta
@@ -132,5 +136,6 @@ runManyFB <- function(M, stepsize, L, initial.q, initial.theta , Y, E, A, spde,
   print(paste("Acceptance theta:",mean(accepts[,1])))
   print(paste("Acceptance others:",mean(accepts[,2])))
 
-  list(qs=qs, thetas=thetas)
+  #list(qs=qs, thetas=thetas)
+  cbind(qs[,1],thetas,qs[,2:ncol(qs)])
 }

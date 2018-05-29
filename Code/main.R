@@ -28,11 +28,6 @@ library(coda) # Version 0.19-1
 ##------- Load Helper Functions ---------##
 ###########################################
 
-# Kenya + Scotland
-source("Code/helper_fcns/determine_pop_at_mesh.R")
-source("Code/helper_fcns/determine_points_in_polys.R")
-source("Code/helper_fcns/make_D_matrix.R")
-
 # Kenya
 source("Code/helper_fcns/make_prediction_A_matrix.R")
 source("Code/helper_fcns/obtain_results.R")

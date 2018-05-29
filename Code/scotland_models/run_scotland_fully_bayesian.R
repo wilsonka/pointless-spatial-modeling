@@ -8,7 +8,6 @@ A <- D
 spde <- spde
 c.Sig <- 0.05 * cov.eb[2:3, 2:3]
 
-
 if(run_fb) {
   run.update.theta1 <- runManyFB(M=1010000, stepsize=0.01, L=10, initial.q,
                                  initial.theta , Y, E, A, spde, (2/5*c.Sig), maxL=NULL,
