@@ -4,8 +4,14 @@
 
 # Load adm0, adm0.5, adm1, 
 #   kenya.data (location and sample size of each cluster), and 
-#   pop.dat.kenya (population data for Kenya)
+
 load("Data/Kenya/kenya_dataNEW.RData")
+
+# Read in population data
+# pop.dat <- raster("gpw-v4-population-count-adjusted-to-2015-unwpp-country-totals_2000.tif")
+# pop.dat <- setMinMax(pop.dat)
+# kenya.extent <- extent(33.9, 42, -4.7, 5.1)
+# pop.dat.kenya <- crop(pop.dat, kenya.extent)
 
 kenya.df1 <- fortify(adm0)
 kenya.df1$id <- as.numeric(kenya.df1$id)

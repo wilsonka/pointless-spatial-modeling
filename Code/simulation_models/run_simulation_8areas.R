@@ -28,6 +28,7 @@ res.spde.area8 <- inla(f.spde,
                           ))), #verbose=T,
                       control.predictor=list(
                         A=inla.stack.A(stk.dat.coords.area8), compute=TRUE),
+                      #control.inla=list(reordering="metis"), #fix the bus error
                       scale=N,  # scale is on precision scale
                       control.fixed=list(mean=list(alpha=0),
                                          prec=list(alpha=1/100))) 

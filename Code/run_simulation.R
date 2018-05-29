@@ -41,9 +41,6 @@ rel.points.clip <- pred.info$rel.points.clip
 #### Simulate Data ###
 ######################
 
-# Surveys
-set.seed(430)
-kenya.data$ybar <- rnorm(400, kenya.data$mu, sd=sqrt(sigma2/kenya.data$N))
 
 # Census
 # data simulated on 1kmx1km grid
@@ -57,6 +54,17 @@ coordinates(pop.pt.inside) <- ~ long + lat
 pop.pt.inside@proj4string <- adm0@proj4string
 
 
+### 47 Areas
+#poplocs47 <- DeterminePointsInPolys(pop.inside[,1:2], kenya.df47)
+poplocs47 <- over(pop.pt.inside, adm1)[,1]
+#is.na(poplocs47) <- 0
+
+
+# Surveys
+set.seed(430)
+kenya.data$ybar <- rnorm(400, kenya.data$mu, sd=sqrt(sigma2/kenya.data$N))
+
+
 # for truth defined at mesh points
 proj.to.pop <- inla.mesh.projector(mesh.true, 
                                    loc=as.matrix(pop.pt.inside@coords))
@@ -66,10 +74,7 @@ field.at.pop <- inla.mesh.project(proj.to.pop,
 pop.inside <- pop.pt.inside
 pop.inside$mu <- alpha + field.at.pop
 
-### 47 Areas
-#poplocs47 <- DeterminePointsInPolys(pop.inside[,1:2], kenya.df47)
-poplocs47 <- over(pop.pt.inside, adm1)[,1]
-#is.na(poplocs47) <- 0
+
 
 pop.inside$locs47 <- poplocs47
 popi <- tapply(pop.inside$pop, pop.inside$locs47, sum)

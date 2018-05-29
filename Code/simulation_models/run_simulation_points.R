@@ -20,19 +20,19 @@ prior.table = paste(c("table:", cbind(lprec, prior.function(lprec))),
                     sep = "", collapse = " ")
 
 
-# res.spde.points.pr <- inla(f.spde,
-#                            control.compute=list(dic=TRUE),
-#                            data=inla.stack.data(stk.all),
-#                            control.family=list(
-#                              hyper=list(
-#                                prec=list(
-#                                  prior = prior.table,
-#                                  initial=2))),
-#                            control.predictor=list(
-#                              A=inla.stack.A(stk.all), compute=TRUE),
-#                            scale=N,  # scale is on precision scale
-#                            control.fixed=list(mean=list(alpha=0),
-#                              prec=list(alpha=1/100)))
+res.spde.points.pr <- inla(f.spde,
+                           control.compute=list(dic=TRUE),
+                           data=inla.stack.data(stk.all),
+                           control.family=list(
+                             hyper=list(
+                               prec=list(
+                                 prior = prior.table,
+                                 initial=2))),
+                           control.predictor=list(
+                             A=inla.stack.A(stk.all), compute=TRUE),
+                           scale=N,  # scale is on precision scale
+                           control.fixed=list(mean=list(alpha=0),
+                             prec=list(alpha=1/100)))
 
 res.spde.points <- inla(f.spde,
                         control.compute=list(dic=TRUE),

@@ -2,26 +2,25 @@
 ############# MANUSCRIPT CODE #############
 ###########################################
 
-
 ###########################################
 ##------------ Load Packages ------------##
 ###########################################
 
-library(INLA) # Version 17.12.01
+library(INLA) # Version 17.06.20
 
-library(sp) # Version 1.2-5
-library(rgdal) # Version 1.2-13
+library(sp) # Version 1.2-7
+library(rgdal) # Version 1.2-20
 library(maptools) # Version 0.9-2
 library(ggplot2) # Version 2.2.1
-library(rgeos) # Version 0.3-25
+library(rgeos) # Version 0.3-26
 library(plyr) # Version 1.8.4
-library(dplyr) # Version 0.7.4
-library(raster) # Version 2.5-8
+library(dplyr) # Version 0.7.5
+library(raster) # Version 2.6-7
 
 library(gridExtra) # Version 2.3
 library(cowplot) # Version 0.9.2
 
-library(TMB) # Version 1.7.11
+library(TMB) # Version 1.7.13
 library(coda) # Version 0.19-1
 
 ###########################################
