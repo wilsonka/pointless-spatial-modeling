@@ -6,10 +6,9 @@ data.inla$region.struct <- 1:nrow(data.inla)
 data.inla$region.unstruct <- 1:nrow(data.inla)
 
 res.icar <- inla(obs ~ f(region.struct, model="besag", graph="Data/Scotland/scotland.graph",
-                         adjust.for.con.comp = T, param=c(1, 1),
-                         scale.model=T
-                         ) +
-                   f(region.unstruct, model="iid", param=c(3.2761, 1.81)), 
+                         adjust.for.con.comp = T, param=c(1, 0.2/0.59),
+                         scale.model=T) +
+                   f(region.unstruct, model="iid", param=c(1, 0.14)), 
                  E=exp, family="poisson", data=data.inla,
                  control.predictor=list(compute=TRUE),
                  control.compute=list(dic=TRUE))

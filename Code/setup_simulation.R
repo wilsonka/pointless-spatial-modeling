@@ -40,7 +40,7 @@ boundary.kenya <- inla.nonconvex.hull(points.kenya@coords,
                                       resolution=c(120,120))
 
 # Determine population near these mesh points
-pop.at.meshX <- extract(pop.dat.kenya, points.kenya@coords)
+pop.at.meshX <- raster::extract(pop.dat.kenya, points.kenya@coords)
 pop.at.meshX[is.na(pop.at.meshX)] <- 0
 pop.at.mesh <- data.frame(points.kenya@coords)
 pop.at.mesh$pop <- pop.at.meshX
@@ -93,7 +93,7 @@ D <- D.tmp$D
 
 mesh.df$weight.scaled <- colSums(D)
 nmesh.area <- 1 / tapply(rep(1, nrow(mesh.df)), mesh.df$loc, sum)
-mesh.df$weight.comp <- nmesh.area[mesh.df$loc + 1] # comparison weight
+mesh.df$weight.comp <- nmesh.area[mesh.df$loc] # comparison weight
 
 # adm0.5
 
@@ -107,4 +107,4 @@ mesh.df$weight.unscaled8 <- D.tmp8$mesh.weights
 D8 <- D.tmp8$D
 mesh.df$weight.scaled8 <- colSums(D8)
 nmesh.area8 <- 1 / tapply(rep(1, nrow(mesh.df)), mesh.df$loc8, sum)
-mesh.df$weight.comp8 <- nmesh.area8[mesh.df$loc8 + 1] # comparison weight
+mesh.df$weight.comp8 <- nmesh.area8[mesh.df$loc8] # comparison weight

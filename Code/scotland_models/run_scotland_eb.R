@@ -4,5 +4,5 @@ Obj.eb <- MakeADFun(data=Data.tmb, parameters=Params.tmb,
 Opt.eb <- optim(par=Obj.eb$par, fn=Obj.eb$fn, gr=Obj.eb$gr, method="BFGS",
                 hessian=T)
 
-#Opt.eb$par  # 0.688, 2.30, -3.23
+#Opt.eb$par  # 0.688, 2.30, -3.24
 cov.eb <- solve(Opt.eb$hessian)
