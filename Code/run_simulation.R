@@ -55,9 +55,7 @@ pop.pt.inside@proj4string <- adm0@proj4string
 
 
 ### 47 Areas
-#poplocs47 <- DeterminePointsInPolys(pop.inside[,1:2], kenya.df47)
 poplocs47 <- over(pop.pt.inside, adm1)[,1]
-#is.na(poplocs47) <- 0
 
 
 # Surveys
@@ -86,7 +84,6 @@ census.df47 <- data.frame(id=1:47, ybar=rnorm(47, mui, sd=sqrt(sigma2/households
                           N=householdsizei)
 
 ### 8 Areas
-#poplocs8 <- mapping47to8[poplocs47 + 1]
 poplocs8 <- mapping47to8[poplocs47]
 pop.inside$locs8 <- poplocs8
 popi8 <- tapply(pop.inside$pop, pop.inside$locs8, sum)
@@ -154,7 +151,6 @@ var(field.true)  # 0.672
 
 # Table 01
 # points
-#ObtainResults(res.spde.points, field.true, mesh.df$loc != 0)
 ObtainResults(res.spde.points, field.true, !is.na(mesh.df$loc))
 # 47 areas
 ObtainResults(res.spde.area, field.true, !is.na(mesh.df$loc))
