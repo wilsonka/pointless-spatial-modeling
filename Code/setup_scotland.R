@@ -33,7 +33,7 @@ set.seed(1)
 points.scotland <- spsample(scot.BNG, 2000, "regular")
 
 mesh.pts <- data.frame(points.scotland@coords)#/1000
-pop.at.meshX <- extract(pop.dat.scot, mesh.pts)
+pop.at.meshX <- raster::extract(pop.dat.scot, mesh.pts)
 pop.at.meshX[is.na(pop.at.meshX)] <- 0
 pop.at.mesh <- mesh.pts/1000
 pop.at.mesh$pop <- pop.at.meshX
