@@ -5,7 +5,7 @@
 
 
 ## U function
-U <- function(q, Y, E, A, Q) {
+Uhybrid <- function(q, Y, E, A, Q) {
   ## Inputs: values for the latent variables (q),
   ##         obs (Y), expected countes (E), projector matrix (A),
   ##         Q -- the precision matrix
@@ -18,7 +18,7 @@ U <- function(q, Y, E, A, Q) {
 }
 
 ## grad_U function
-grad_U <- function(q, Y, E, A, Q) {
+grad_Uhybrid <- function(q, Y, E, A, Q) {
   ## Inputs: values for the latent variables (q),
   ##         obs (Y), expected countes (E), projector matrix (A),
   ##         Q -- the precision matrix
@@ -37,7 +37,7 @@ grad_U <- function(q, Y, E, A, Q) {
   c(dU_dalpha, dU_dS.c)
 }
 
-HMC <- function (stepsize, L, current_q, Y, E, A, Q, var.p) {
+HMChybrid <- function (stepsize, L, current_q, Y, E, A, Q, var.p) {
   ## Inputs: step size, number of steps in each iteration (L), 
   ##    current values of latent variables (current_q), 
   ##    precision matrix for S (Q), and variance of momentum variables (var.p)
@@ -50,22 +50,22 @@ HMC <- function (stepsize, L, current_q, Y, E, A, Q, var.p) {
   current_p <- p
   
   #
-  p <- p - eps/2 * grad_U(q, Y, E, A, Q)
+  p <- p - eps/2 * grad_Uhybrid(q, Y, E, A, Q)
   
   for (i in 1:L) {
     q <- q + eps * 1/var.p * p
     if (i != L) {
-      p <- p - eps * grad_U(q, Y, E, A, Q)
+      p <- p - eps * grad_Uhybrid(q, Y, E, A, Q)
     }
   }
   
 
-  p <- p - eps/2 * grad_U(q, Y, E, A, Q)
+  p <- p - eps/2 * grad_Uhybrid(q, Y, E, A, Q)
   p <- -p
   
-  current_U <- U(current_q, Y, E, A, Q)
+  current_U <- Uhybrid(current_q, Y, E, A, Q)
   current_K <- sum(current_p^2/var.p)/2
-  proposed_U <- U(q, Y, E, A, Q)
+  proposed_U <- Uhybrid(q, Y, E, A, Q)
   proposed_K <- sum(p^2/var.p)/2
   
   if (log(runif(1)) < (current_U - proposed_U + current_K - proposed_K)[1]) {
@@ -90,11 +90,11 @@ runManyHybrid <- function (M, stepsize, L, initial_q , Y, E, A, Q, var.p,
     }
     
     if( i <= burnin) {
-      out <- HMC(stepsize[1], L[1], q.prev, Y, E, A, Q, var.p)
+      out <- HMChybrid(stepsize[1], L[1], q.prev, Y, E, A, Q, var.p)
       q.prev <- out$q
       
     } else {
-      out <- HMC(stepsize[2], L[2], q.prev, Y, E, A, Q, var.p)
+      out <- HMCHMChybrid(stepsize[2], L[2], q.prev, Y, E, A, Q, var.p)
       q.prev <- out$q
       if(i %% thin == 0) {
         qs[j+1,] <- out$q
